@@ -1,11 +1,12 @@
 const express = require('express')
+const path = require('path')
 
 const app = express()
 
 app.use(express.json())
+app.use(express.static('dist'))
 
 const morgan = require('morgan')
-app.use(morgan('tiny'))
 
 morgan.token('body', (request) => JSON.stringify(request.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
@@ -34,16 +35,6 @@ let persons = [
     "number": "39-23-6423122"
   }
 ]
-
-app.get('/', (request, response) => {
-  response.send(`
-    <h1>Phonebook API</h1>
-    <ul>
-      <li><a href="/api/persons">All persons</a></li>
-      <li><a href="/info">Info</a></li>
-    </ul>
-  `)
-})
 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
