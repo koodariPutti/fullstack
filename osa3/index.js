@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const path = require('path')
 
@@ -7,6 +8,7 @@ app.use(express.json())
 app.use(express.static('dist'))
 
 const morgan = require('morgan')
+const Person = require('./models/person')
 
 morgan.token('body', (request) => JSON.stringify(request.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
@@ -62,47 +64,18 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-  const body = request.body
+  const { name, number } = request.body
 
-  if (!body.name || !body.number) {
+  if (!name || !number) {
     return response.status(400).json({ error: 'name or number missing' })
   }
 
-  if (persons.some(person => person.name === body.name)) {
-    return response.status(400).json({ error: 'name must be unique' })
-  }
+  const person = new Person({ name, number })
 
-  const newPerson = {
-    id: String(Math.floor(Math.random() * 1000000000)),
-    name: body.name,
-    number: body.number
-  }
-
-  persons = persons.concat(newPerson)
-  response.status(201).json(newPerson)
+  person.save().then(saved => {
+    response.status(201).json(saved)
+  })
 })
-
-const mongoose = require('mongoose')
-
-if (process.argv.length < 3) {
-  console.log('give password as argument')
-  process.exit(1)
-}
-
-const password = process.argv[2]
-const name = process.argv[3]
-const number = process.argv[4]
-
-const url = `mongodb+srv://fullstack:${password}@cluster0.yfthjvw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
-
-mongoose.set('strictQuery', false)
-mongoose.connect(url)
-
-const personSchema = new mongoose.Schema({
-    name: String, 
-    number: String 
-})
-const Person = mongoose.model('Person', personSchema) 
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
