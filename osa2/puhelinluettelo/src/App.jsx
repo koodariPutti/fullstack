@@ -42,13 +42,12 @@ const App = () => {
             }, 3000)
           })
           .catch(error => {
-            setErrorMessage(error.message)
-            console.log('Error updating')
-            setTimeout(() => {
-              setErrorMessage(null)
-            }, 3000)
+            const msg = error?.response?.data?.error || error.message || 'Update failed'
+            setErrorMessage(msg)
+            setTimeout(() => setErrorMessage(null), 3000)
           })
       }
+      return;
     }
 
     // tarkistetaan onko numero jo listassa

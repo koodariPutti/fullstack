@@ -19,12 +19,6 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.get('/info', (request, response) => {
-  const count = persons.length
-  const time = new Date()
-  response.send(`<p>Phonebook has info for ${count} people</p><p>${time}</p>`)
-})
-
 app.get('/info', (request, response, next) => {
   Person.countDocuments({})
     .then(count => {
@@ -78,7 +72,7 @@ app.post('/api/persons', (request, response, next) => {
   Person.findOne({ name }).then(found=>{
     if (found) return response.status(409).json({ error: 'name must be unique' })
     return new Person({ name, number }).save().then(saved=>response.status(201).json(saved))
-  }).catch(next)
+  }).catch(error => next(error))
 })
 
 
@@ -90,6 +84,8 @@ app.use(unknownEndpoint)
 const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).json({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
