@@ -59,9 +59,20 @@ app.get('/api/persons/:id', (request, response) => {
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  persons = persons.filter(person => person.id !== id)
-  response.status(204).end()
+
+  Person.findByIdAndDelete(id)
+    .then(deleted => {
+      if (!deleted) {
+        return response.status(404).end()
+      }
+      return response.status(204).end()
+    })
+    .catch(error => {
+      console.error(error.message)
+      return response.status(400).json({ error: 'error deleting person' })
+    })
 })
+
 
 app.post('/api/persons', (request, response) => {
   const { name, number } = request.body
