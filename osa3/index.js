@@ -13,31 +13,6 @@ const Person = require('./models/person')
 morgan.token('body', (request) => JSON.stringify(request.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-
-
-let persons = [
-  {
-    "id": "1",
-    "name": "Arto Hellas",
-    "number": "040-123456"
-  },
-  {
-    "id": "2",
-    "name": "Ada Lovelace",
-    "number": "39-44-5323523"
-  },
-  {
-    "id": "3",
-    "name": "Dan Abramov",
-    "number": "12-43-234345"
-  },
-  {
-    "id": "4",
-    "name": "Mary Poppendieck",
-    "number": "39-23-6423122"
-  }
-]
-
 app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => {
     response.json(persons)
@@ -50,11 +25,23 @@ app.get('/info', (request, response) => {
   response.send(`<p>Phonebook has info for ${count} people</p><p>${time}</p>`)
 })
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = String(request.params.id)
-  const person = persons.find(p => p.id === id)
-  if (!person) return response.status(404).end()
-  response.json(person)
+app.get('/info', (request, response, next) => {
+  Person.countDocuments({})
+    .then(count => {
+      response.send(
+        `<p>Phonebook has info for ${count} people</p><p>${new Date()}</p>`
+      )
+    })
+    .catch(next)
+})
+
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+    .then(person => {
+      if (!person) return response.status(404).end()
+      return response.json(person)
+    })
+    .catch(next)
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
