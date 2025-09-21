@@ -67,17 +67,33 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(next)
 })
 
+app.put('/api/persons/:id', (request, response, next) => {
+  const id = request.params.id
+  const { name, number } = request.body
+  const update = { name, number }
+
+  Person.findByIdAndUpdate(id, update, {
+    new: true,
+    runValidators: true,
+    context: 'query'
+  })
+    .then(updated => {
+      if (!updated) return response.status(404).end()
+      return response.json(updated)
+    })
+    .catch(next)
+})
+
 app.post('/api/persons', (request, response, next) => {
   const { name, number } = request.body
-  
-  if (!name || !number) {
-    return response.status(400).json({ error: 'name or number missing' })
-  }
 
-  const person = new Person({ name, number })
-
-  person.save().then(saved => response.status(201).json(saved)).catch(next)
+  if (!name || !number) return response.status(400).json({ error: 'name or number missing' })
+  Person.findOne({ name }).then(found=>{
+    if (found) return response.status(409).json({ error: 'name must be unique' })
+    return new Person({ name, number }).save().then(saved=>response.status(201).json(saved))
+  }).catch(next)
 })
+
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
