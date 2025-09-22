@@ -78,3 +78,26 @@ describe('total likes', () => {
   });
   
 });
+
+describe('favorite blog', () => {
+  test('of empty list is null', () => {
+    assert.strictEqual(listHelper.favoriteBlog([]), null);
+  });
+
+  test('when list has only one blog, return that', () => {
+    const one = [{ title: 'A', author: 'X', likes: 3 }];
+    const expected = { title: 'A', author: 'X', likes: 3 };
+    assert.deepStrictEqual(listHelper.favoriteBlog(one), expected);
+  });
+
+  test('of a bigger list is the one with most likes', () => {
+    const blogs = [
+      { title: 'React patterns', author: 'Michael Chan', likes: 7 },
+      { title: 'Go To Statement Considered Harmful', author: 'Edsger W. Dijkstra', likes: 5 },
+      { title: 'Canonical string reduction', author: 'Edsger W. Dijkstra', likes: 12 },
+      { title: 'First class tests', author: 'Robert C. Martin', likes: 10 },
+    ];
+    const expected = { title: 'Canonical string reduction', author: 'Edsger W. Dijkstra', likes: 12 };
+    assert.deepStrictEqual(listHelper.favoriteBlog(blogs), expected);
+  });
+});
