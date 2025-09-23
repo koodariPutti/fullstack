@@ -6,6 +6,8 @@ const logger = require('./utils/logger');
 const middleware = require('./utils/middleware');
 const blogsRouter = require('./controllers/blogs');
 const Blog = require('./models/blog')
+const bcrypt = require('bcrypt')
+const usersRouter = require('./controllers/users')
 
 const app = express();
 
@@ -14,14 +16,16 @@ mongoose
   .connect(config.MONGODB_URI)
   .then(() => logger.info('connected to MongoDB'))
   .catch(err => logger.error('error connection to MongoDB:', err.message));
-
+  
 app.use(express.json());
 app.use(middleware.requestLogger);
 
 app.use('/api/blogs', blogsRouter);
+app.use('/api/users', usersRouter)
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
+
 
 app.get('/api/blogs', async (_req, res) => {
   const blogs = await Blog.find({})
